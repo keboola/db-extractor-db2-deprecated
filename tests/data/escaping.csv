@@ -1,0 +1,9 @@
+"COL1","COL2"
+"line with enclosure","second column"
+"column with enclosure "", and comma inside text","second column enclosure in text """
+"columns with
+new line","columns with 	tab"
+"unicode characters","ľščťžýáíéúäôň"
+"first","something with
+
+double new line"

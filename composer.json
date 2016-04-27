@@ -1,0 +1,20 @@
+{
+    "name": "keboola/db-extractor-db2",
+    "require": {
+        "keboola/db-extractor-common": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.6.*"
+    },
+    "authors": [
+        {
+            "name": "Miroslav Cillik",
+            "email": "miro@keboola.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Keboola\\": "src/Keboola/"
+        }
+    }
+}

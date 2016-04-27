@@ -1,0 +1,22 @@
+app:
+  build: .
+  volumes:
+      - .:/code
+  working_dir: /code
+  entrypoint: "./phpunit.sh"
+  tty: true
+  stdin_open: true
+  environment:
+    - DB2_DB_HOST=db2
+    - DB2_DB_PORT=50000
+    - DB2_DB_DATABASE=SAMPLE
+    - DB2_DB_USER=db2inst1
+    - DB2_DB_PASSWORD=db2inst1
+  links:
+    - db2
+
+db2:
+  image: quay.io/keboola/db2express-c-docker
+  privileged: true
+  expose:
+    - "50000"

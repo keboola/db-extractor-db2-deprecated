@@ -1,0 +1,7 @@
+vendor/
+/data/
+.idea/
+composer.phar
+runtests.sh
+test.php
+.DS_Store

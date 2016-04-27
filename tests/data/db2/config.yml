@@ -1,0 +1,17 @@
+parameters:
+    db:
+        driver: db2
+        host: db2
+        port: 50000
+        database: SAMPLE
+        user: db2inst1
+        password: db2inst1
+
+    tables:
+        -
+            name: projact
+            query: "SELECT * FROM DB2INST1.PROJACT"
+            outputTable: in.c-main.db2projact
+            incremental: false
+            primaryKey: ~
+            enabled: true
