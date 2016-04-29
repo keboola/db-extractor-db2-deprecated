@@ -24,7 +24,7 @@ class DB2Test extends ExtractorTest
     public function getConfig($driver = 'db2')
     {
         $config = parent::getConfig('db2');
-        $config['extractor_class'] = 'DB2';
+        $config['parameters']['extractor_class'] = 'DB2';
         return $config;
     }
 
