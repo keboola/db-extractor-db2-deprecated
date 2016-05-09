@@ -100,4 +100,14 @@ class DB2Test extends ExtractorTest
 
         return new \PDO($dsn, $user, $password);
     }
+
+    public function testTestConnection()
+    {
+        $config = $this->getConfig();
+        $config['action'] = 'testConnection';
+        $app = new Application($config);
+
+        $result = $app->run();
+        $this->assertEquals('ok', $result['status']);
+    }
 }

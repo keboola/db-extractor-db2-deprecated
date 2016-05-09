@@ -107,4 +107,8 @@ class DB2 extends Extractor
         return $row;
     }
 
+    public function testConnection()
+    {
+        $this->db->query('SELECT 1 FROM sysibm.sysdummy1');
+    }
 }

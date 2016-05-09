@@ -1,6 +1,5 @@
 parameters:
     db:
-        driver: db2
         host: db2
         port: 50000
         database: SAMPLE
