@@ -62,6 +62,7 @@ class DB2Test extends ExtractorTest
 
         $config = $this->getConfig();
         $config['parameters']['tables'][0] = [
+            'id' => 0,
             'name' => 'escaping',
             'query' => 'SELECT * FROM DB2INST1.ESCAPING',
             'outputTable' => 'in.c-main.db2escaping',
