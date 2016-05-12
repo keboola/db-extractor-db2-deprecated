@@ -8,6 +8,7 @@ parameters:
 
     tables:
         -
+            id: 0
             name: projact
             query: "SELECT * FROM DB2INST1.PROJACT"
             outputTable: in.c-main.db2projact
