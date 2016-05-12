@@ -40,16 +40,16 @@
         },
         {
             "name": "keboola/db-extractor-common",
-            "version": "3.1.0",
+            "version": "3.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/db-extractor-common.git",
-                "reference": "4baeb458e40aa6d998f4721629929e06085e07d2"
+                "reference": "0a7aa6ad415d213f6bd21802bb22235e9fd89754"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/4baeb458e40aa6d998f4721629929e06085e07d2",
-                "reference": "4baeb458e40aa6d998f4721629929e06085e07d2",
+                "url": "https://api.github.com/repos/keboola/db-extractor-common/zipball/0a7aa6ad415d213f6bd21802bb22235e9fd89754",
+                "reference": "0a7aa6ad415d213f6bd21802bb22235e9fd89754",
                 "shasum": ""
             },
             "require": {
@@ -77,7 +77,7 @@
                     "email": "miro@keboola.com"
                 }
             ],
-            "time": "2016-05-05 14:30:22"
+            "time": "2016-05-10 13:52:03"
         },
         {
             "name": "monolog/monolog",
@@ -243,7 +243,7 @@
         },
         {
             "name": "symfony/config",
-            "version": "v3.0.5",
+            "version": "v3.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/config.git",
@@ -296,7 +296,7 @@
         },
         {
             "name": "symfony/filesystem",
-            "version": "v3.0.5",
+            "version": "v3.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/filesystem.git",
@@ -345,7 +345,7 @@
         },
         {
             "name": "symfony/process",
-            "version": "v3.0.5",
+            "version": "v3.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/process.git",
@@ -394,7 +394,7 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v3.0.5",
+            "version": "v3.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
