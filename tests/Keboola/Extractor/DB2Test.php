@@ -37,7 +37,7 @@ class DB2Test extends ExtractorTest
 
         $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest';
 
-        $this->assertEquals('ok', $result['status']);
+        $this->assertEquals('success', $result['status']);
         $this->assertFileExists($outputCsvFile);
         $this->assertFileExists($outputManifestFile);
         $this->assertEquals(file_get_contents($expectedCsvFile), file_get_contents($outputCsvFile));
