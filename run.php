@@ -19,7 +19,7 @@ try {
     }
 
     $config = Yaml::parse(file_get_contents($arguments["data"] . "/config.yml"));
-    $config['parameters']['dataDir'] = $arguments['data'];
+    $config['parameters']['data_dir'] = $arguments['data'];
     $config['parameters']['extractor_class'] = 'DB2';
 
     $app = new Application($config);
