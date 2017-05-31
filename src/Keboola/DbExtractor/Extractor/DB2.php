@@ -68,8 +68,10 @@ class DB2 extends Extractor
 
         // write header and first line
         try {
-            $stmt = $this->db->prepare($query);
+
+        	$stmt = $this->db->prepare($query);
             $stmt->execute();
+
             $resultRow = $stmt->fetch(\PDO::FETCH_ASSOC);
 
             if (is_array($resultRow) && !empty($resultRow)) {
@@ -111,4 +113,67 @@ class DB2 extends Extractor
     {
         $this->db->query('SELECT 1 FROM sysibm.sysdummy1');
     }
+
+    public function listTables() {
+
+    	$res = $this->db->query("SELECT * FROM SYSCAT.TABLES WHERE OWNERTYPE = 'U'");
+    	$arr = $res->fetchAll();
+    	$output = [];
+    	foreach ($arr as $table) {
+    		$output[] = $table['TABNAME'];
+		}
+    	return $output;
+	}
+
+	public function describeTable($tableName)
+	{
+		$sql = sprintf(
+			"SELECT COLS.*, IDXCOLS.*, REFCOLS.* FROM SYSCAT.COLUMNS AS COLS 
+			LEFT OUTER JOIN (
+				SELECT ICU.COLNAME, IDX.TABNAME, IDX.INDEXTYPE, IDX.UNIQUERULE FROM SYSCAT.INDEXCOLUSE AS ICU
+				JOIN SYSCAT.INDEXES AS IDX 
+				ON ICU.INDNAME = IDX.INDNAME AND SUBSTR(IDX.INDEXTYPE,1,1) != 'X'
+			) AS IDXCOLS ON COLS.TABNAME = IDXCOLS.TABNAME AND COLS.COLNAME = IDXCOLS.COLNAME
+			LEFT OUTER JOIN (
+				SELECT KCU.COLNAME, REF.TABNAME, REF.REFKEYNAME, REF.REFTABNAME FROM SYSCAT.KEYCOLUSE AS KCU
+				JOIN SYSCAT.REFERENCES AS REF 
+				ON KCU.CONSTNAME = REF.CONSTNAME
+			) AS REFCOLS ON COLS.TABNAME = REFCOLS.TABNAME AND COLS.COLNAME = REFCOLS.COLNAME 
+			WHERE COLS.TABNAME = '%s'",
+			$tableName
+		);
+
+		$res = $this->db->query(
+			$sql
+		);
+
+		$arr = $res->fetchAll();
+
+		$columns = [];
+		foreach ($arr as $i => $column) {
+
+			$length = $column['LENGTH'];
+			if ($column['SCALE'] != 0 && $column['TYPENAME'] === 'DECIMAL') {
+				$length .= "," . $column['SCALE'];
+			}
+
+			$columns[$i] = [
+			    "name" => $column['COLNAME'],
+				"type" => $column['TYPENAME'],
+				"nullable" => ($column['NULLS'] === 'N') ? false : true,
+				"default" => $column['DEFAULT'],
+				"length" => $length,
+				"ordinalPosition" => $column['COLNO'],
+			];
+			if (!is_null($column['INDEXTYPE'])) {
+			    $columns[$i]['indexed'] = true;
+			    $columns[$i]['primaryKey'] = ($column['UNIQUERULE'] === 'P') ? true : false;
+			    $columns[$i]['uniqueKey'] = ($column['UNIQUERULE'] === 'U') ? true : false;
+            }
+            if (!is_null($column['REFKEYNAME'])) {
+			    $columns[$i]['foreignKeyRefTable'] = $column['REFTABNAME'];
+			    $columns[$i]['foreignKeyRef'] = $column['REFKEYNAME'];
+            }
+		}
+	}
 }

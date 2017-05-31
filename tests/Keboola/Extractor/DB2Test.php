@@ -187,4 +187,68 @@ class DB2Test extends ExtractorTest
         $this->assertFileExists($outputManifestFile);
         $this->assertEquals(file_get_contents($expectedCsvFile), file_get_contents($outputCsvFile));
     }
+
+	public function testGetTablesAction()
+	{
+		$config = $this->getConfig();
+		$config['action'] = 'getTables';
+		$app = new Application($config);
+
+        // set up a reference for constraint testing
+		$conn = $this->getConnection();
+        $conn->exec("ALTER TABLE escaping ADD CONSTRAINT pk1 PRIMARY KEY (col1, col2)");
+		$conn->exec("DROP TABLE multipk");
+        $conn->exec("CREATE TABLE multipk (col1 VARCHAR(255) NOT NULL, col2 VARCHAR(255) NOT NULL)");
+		$conn->exec("ALTER TABLE multipk ADD CONSTRAINT fk1 FOREIGN KEY (col1, col2) REFERENCES escaping (col1, col2)");
+
+		$result = $app->run();
+
+		$this->assertArrayHasKey('status', $result);
+		$this->assertArrayHasKey('tables', $result);
+
+		$this->assertEquals('success', $result['status']);
+		$this->assertCount(49, $result['tables']);
+		foreach ($result['tables'] as $i => $table) {
+            $this->assertArrayHasKey('name', $table);
+            $this->assertArrayHasKey('columns', $table);
+            if (count($table['columns']) > 0) { // sample DB has a table with no columns
+                foreach ($table['columns'] as $j => $column) {
+                    $this->assertArrayHasKey('name', $column);
+                    $this->assertArrayHasKey('type', $column);
+                    $this->assertArrayHasKey('length', $column);
+                    $this->assertArrayHasKey('nullable', $column);
+                    $this->assertArrayHasKey('default', $column);
+                    $this->assertArrayHasKey('ordinalPosition', $column);
+                }
+                if ($table['name'] === 'ESCAPING') {
+                    foreach ($table['columns'] as $j => $column) {
+                        $this->assertArrayHasKey('indexed', $column);
+                        $this->assertTrue($column['indexed']);
+                        $this->assertArrayHasKey('primaryKey', $column);
+                        $this->assertTrue($column['primaryKey']);
+                        $this->assertArrayHasKey('uniqueKey', $column);
+                        $this->assertFalse($column['primaryKey']);
+
+                        $this->assertEquals("VARCHAR", $column['type']);
+                        $this->assertEquals("255", $column['length']);
+                        $this->assertNull($column['default']);
+                        $this->assertFalse($column['nullable']);
+                    }
+                }
+                if ($table['name'] === 'MULTIPK') {
+                    foreach ($table['columns'] as $j => $column) {
+                        $this->assertArrayHasKey('foreignKeyRef', $column);
+                        $this->assertEquals('PK1', $column['foreignKeyRef']);
+                        $this->assertArrayHasKey('foreignKeyRefTable', $column);
+                        $this->assertEquals('ESCAPING', $column['foreignKeyRefTable']);
+
+                        $this->assertEquals("VARCHAR", $column['type']);
+                        $this->assertEquals("255", $column['length']);
+                        $this->assertNull($column['default']);
+                        $this->assertFalse($column['nullable']);
+                    }
+                }
+            }
+        }
+	}
 }
