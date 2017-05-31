@@ -174,6 +174,6 @@ class DB2 extends Extractor
 			    $columns[$i]['foreignKeyRefTable'] = $column['REFTABNAME'];
 			    $columns[$i]['foreignKeyRef'] = $column['REFKEYNAME'];
             }
-		}
+        }
 	}
 }
