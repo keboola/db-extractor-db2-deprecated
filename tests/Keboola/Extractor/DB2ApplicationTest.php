@@ -40,7 +40,7 @@ class DB2ApplicationTest extends ExtractorTest
             'sshHost' => 'sshproxy',
             'remoteHost' => 'db2',
             'remotePort' => $config['parameters']['db']['port'],
-            'localPort' => '15211',
+            'localPort' => '15213',
         ];
 
         @unlink($this->dataDir . '/config.yml');
@@ -96,7 +96,7 @@ class DB2ApplicationTest extends ExtractorTest
             'sshHost' => 'sshproxy',
             'remoteHost' => 'db2',
             'remotePort' => $config['parameters']['db']['port'],
-            'localPort' => '15212',
+            'localPort' => '15214',
         ];
         @unlink($this->dataDir . '/config.yml');
         file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
