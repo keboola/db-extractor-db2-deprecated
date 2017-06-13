@@ -33,7 +33,7 @@ try {
     }
     $result = $app->run();
     if (!$runAction) {
-        echo json_encode($app->run());
+        echo json_encode($result);
     }
 
 } catch(UserException $e) {
