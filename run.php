@@ -3,6 +3,8 @@
 use Keboola\DbExtractor\Application;
 use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\UserException;
+use Monolog\Handler\NullHandler;
+use Monolog\Logger;
 use Symfony\Component\Yaml\Yaml;
 
 define('APP_NAME', 'ex-db-db2');
@@ -13,6 +15,8 @@ require_once(dirname(__FILE__) . "/vendor/keboola/db-extractor-common/bootstrap.
 $logger = new \Keboola\DbExtractor\Logger(APP_NAME);
 
 try {
+    $runAction = true;
+
     $arguments = getopt("d::", ["data::"]);
     if (!isset($arguments["data"])) {
         throw new UserException('Data folder not set.');
@@ -23,7 +27,14 @@ try {
     $config['parameters']['extractor_class'] = 'DB2';
 
     $app = new Application($config);
-    echo json_encode($app->run());
+    if ($app['action'] !== 'run') {
+        $app['logger']->setHandlers(array(new NullHandler(Logger::INFO)));
+        $runAction = false;
+    }
+    $result = $app->run();
+    if (!$runAction) {
+        echo json_encode($app->run());
+    }
 
 } catch(UserException $e) {
     $logger->log('error', $e->getMessage(), (array) $e->getData());
