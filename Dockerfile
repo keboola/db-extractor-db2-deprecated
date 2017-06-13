@@ -4,6 +4,7 @@ MAINTAINER Miro Cillik <miro@keboola.com>
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     apt-utils \
+    ssh \
     ksh \
     zip \
     unzip \

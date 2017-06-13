@@ -16,6 +16,7 @@ services:
       - DB2_DB_USER=db2inst1
       - DB2_DB_PASSWORD=db2inst1
     links:
+      - sshproxy
       - db2
 
   db2:
@@ -23,3 +24,13 @@ services:
     privileged: true
     expose:
       - "50000"
+
+  sshproxy:
+    build: ./tests/env/sshproxy
+    volumes:
+      - ./tests/env/sshproxy:/code
+    working_dir: /code
+    ports:
+      - "2222:22"
+    links:
+      - db2
