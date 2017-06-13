@@ -1,7 +1,14 @@
-sudo: false
+sudo: required
 
 services:
   - docker
 
 script:
   - docker-compose run app
+
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: ./deploy.sh
+  on:
+    tags: true

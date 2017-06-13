@@ -1,9 +1,10 @@
-FROM php:5.6-fpm
+FROM php:7.1
 MAINTAINER Miro Cillik <miro@keboola.com>
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     apt-utils \
+    ssh \
     ksh \
     zip \
     unzip \
@@ -12,11 +13,13 @@ RUN apt-get update && apt-get install -y \
 
 # Install PHP odbc extension
 RUN set -x \
+    && docker-php-source extract \
     && cd /usr/src/php/ext/odbc \
     && phpize \
     && sed -ri 's@^ *test +"\$PHP_.*" *= *"no" *&& *PHP_.*=yes *$@#&@g' configure \
     && ./configure --with-unixODBC=shared,/usr \
-    && docker-php-ext-install odbc
+    && docker-php-ext-install odbc \
+    && docker-php-source delete
 
 # Install DB2 Client
 RUN mkdir -p /opt/ibm
@@ -30,7 +33,6 @@ ENV IBM_DB_HOME /opt/ibm/dsdriver
 # Install ibm_db2 and pdo_odbc PHP extensions
 RUN echo $IBM_DB_HOME | pecl install ibm_db2
 RUN docker-php-ext-enable ibm_db2
-RUN docker-php-ext-install odbc
 RUN docker-php-ext-configure pdo_odbc --with-pdo-odbc=ibm-db2,/opt/ibm/dsdriver
 RUN docker-php-ext-install pdo_odbc
 RUN export LD_LIBRARY_PATH=$IBM_DB_HOME/lib
@@ -43,4 +45,4 @@ RUN echo "memory_limit = -1" >> /etc/php.ini
 RUN php composer.phar install --no-interaction
 
 # Run app
-ENTRYPOINT php ./run.php --data=/data
+CMD php ./run.php --data=/data

@@ -130,4 +130,61 @@ class DB2Test extends ExtractorTest
 
         $this->assertContains('Connection failed', $exception->getMessage());
     }
+
+    public function testCredentialsWithSSH()
+    {
+        $config = $this->getConfig();
+
+        $config['parameters']['db']['ssh'] = [
+            'enabled' => true,
+            'keys' => [
+                '#private' => $this->getEnv('mysql', 'DB_SSH_KEY_PRIVATE'),
+                'public' => $this->getEnv('mysql', 'DB_SSH_KEY_PUBLIC')
+            ],
+            'user' => 'root',
+            'sshHost' => 'sshproxy',
+            'remoteHost' => 'db2',
+            'remotePort' => $config['parameters']['db']['port'],
+            'localPort' => '15211',
+        ];
+
+        $config['action'] = 'testConnection';
+        unset($config['parameters']['tables']);
+
+        $app = new Application($config);
+        $result = $app->run();
+
+        $this->assertArrayHasKey('status', $result);
+        $this->assertEquals('success', $result['status']);
+    }
+
+    public function testRunWithSSH()
+    {
+        $config = $this->getConfig();
+        $config['parameters']['db']['ssh'] = [
+            'enabled' => true,
+            'keys' => [
+                '#private' => $this->getEnv('mysql', 'DB_SSH_KEY_PRIVATE'),
+                'public' => $this->getEnv('mysql', 'DB_SSH_KEY_PUBLIC')
+            ],
+            'user' => 'root',
+            'sshHost' => 'sshproxy',
+            'remoteHost' => 'db2',
+            'remotePort' => $config['parameters']['db']['port'],
+            'localPort' => '15212',
+        ];
+
+        $app = new Application($config);
+
+        $result = $app->run();
+
+        $expectedCsvFile = ROOT_PATH . '/tests/data/projact.csv';
+        $outputCsvFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv';
+        $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest';
+
+        $this->assertEquals('success', $result['status']);
+        $this->assertFileExists($outputCsvFile);
+        $this->assertFileExists($outputManifestFile);
+        $this->assertEquals(file_get_contents($expectedCsvFile), file_get_contents($outputCsvFile));
+    }
 }
