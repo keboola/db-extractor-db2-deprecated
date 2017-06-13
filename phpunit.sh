@@ -39,4 +39,4 @@ sleep 30;
 
 # run test suite
 export ROOT_PATH="/code";
-./vendor/bin/phpunit --filter DB2ApplicationTest;
+./vendor/bin/phpunit
