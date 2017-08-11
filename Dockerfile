@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     ssh \
     ksh \
     zip \
+    git \
     unzip \
     unixodbc-dev \
     curl
