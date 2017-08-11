@@ -1,5 +1,6 @@
 vendor/
-/data/
+tests/data/config.yml
+tests/data/out/
 .idea/
 composer.phar
 runtests.sh
