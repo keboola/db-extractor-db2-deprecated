@@ -114,21 +114,54 @@ class DB2 extends Extractor
         $this->db->query('SELECT 1 FROM sysibm.sysdummy1');
     }
 
-    public function listTables() {
+    public function getTables(array $tables = null)
+    {
+        $sql = "SELECT * FROM SYSCAT.TABLES WHERE OWNERTYPE = 'U'";
+        
+        if (!is_null($tables) && count($tables) > 0) {
+            $sql .= sprintf(
+                " AND TABNAME IN ('%s')",
+                implode("','", array_map(function ($table) {
+                    return $table;
+                }, $tables))
+            );
+        }
 
-        $res = $this->db->query("SELECT * FROM SYSCAT.TABLES WHERE OWNERTYPE = 'U'");
-        $arr = $res->fetchAll();
+        $res = $this->db->query($sql);
+        $arr = $res->fetchAll(\PDO::FETCH_ASSOC);
+
         $output = [];
         foreach ($arr as $table) {
-            $output[] = $table['TABNAME'];
+            $output[] = $this->describeTable($table);
         }
         return $output;
     }
 
-    public function describeTable($tableName)
+    protected function describeTable(array $table)
     {
+        $tabledef = [
+            'name' => $table['TABNAME'],
+            'schema' => (isset($table['TABSCHEMA'])) ? $table['TABSCHEMA'] : null
+        ];
+        if (isset($table['TYPE'])) {
+            switch ($table['TYPE']) {
+                case 'T':
+                case 'U':
+                    $tabledef['type'] = 'TABLE';
+                    break;
+                case 'V':
+                case 'W':
+                    $tabledef['type'] = 'VIEW';
+                    break;
+                default:
+                    $tabledef['type'] = $table['TYPE'];
+            }
+        } else {
+            $tabledef['type'] = null;
+        }
+
         $sql = sprintf(
-            "SELECT COLS.*, IDXCOLS.*, REFCOLS.* FROM SYSCAT.COLUMNS AS COLS 
+            "SELECT COLS.*, IDXCOLS.INDEXTYPE, IDXCOLS.UNIQUERULE, REFCOLS.REFKEYNAME, REFCOLS.REFTABNAME FROM SYSCAT.COLUMNS AS COLS 
             LEFT OUTER JOIN (
                 SELECT ICU.COLNAME, IDX.TABNAME, IDX.INDEXTYPE, IDX.UNIQUERULE FROM SYSCAT.INDEXCOLUSE AS ICU
                 JOIN SYSCAT.INDEXES AS IDX 
@@ -139,16 +172,13 @@ class DB2 extends Extractor
                 JOIN SYSCAT.REFERENCES AS REF 
                 ON KCU.CONSTNAME = REF.CONSTNAME
             ) AS REFCOLS ON COLS.TABNAME = REFCOLS.TABNAME AND COLS.COLNAME = REFCOLS.COLNAME 
-            WHERE COLS.TABNAME = '%s'",
-            $tableName
+            WHERE COLS.TABNAME = '%s' ORDER BY COLS.COLNO",
+            $table['TABNAME']
         );
 
-        $res = $this->db->query(
-            $sql
-        );
+        $res = $this->db->query($sql);
 
         $arr = $res->fetchAll();
-
         $columns = [];
         foreach ($arr as $i => $column) {
 
@@ -175,5 +205,8 @@ class DB2 extends Extractor
                 $columns[$i]['foreignKeyRef'] = $column['REFKEYNAME'];
             }
         }
+        $tabledef['columns'] = $columns;
+
+        return $tabledef;
     }
 }
