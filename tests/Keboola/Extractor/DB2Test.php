@@ -11,6 +11,8 @@ namespace Keboola\DbExtractor;
 
 use Keboola\DbExtractor\Exception\UserException;
 use Keboola\DbExtractor\Test\ExtractorTest;
+use Symfony\Component\Yaml\Yaml;
+
 
 class DB2Test extends ExtractorTest
 {
@@ -186,5 +188,395 @@ class DB2Test extends ExtractorTest
         $this->assertFileExists($outputCsvFile);
         $this->assertFileExists($outputManifestFile);
         $this->assertEquals(file_get_contents($expectedCsvFile), file_get_contents($outputCsvFile));
+    }
+
+	public function testGetTablesAction()
+	{
+		$config = $this->getConfig();
+		$config['action'] = 'getTables';
+		$app = new Application($config);
+
+        // set up a reference for constraint testing
+        $conn = $this->getConnection();
+        $conn->exec("ALTER TABLE escaping ADD CONSTRAINT pk1 PRIMARY KEY (col1, col2)");
+        $conn->exec("DROP TABLE multipk");
+        $conn->exec("CREATE TABLE multipk (col1 VARCHAR(255) NOT NULL, col2 VARCHAR(255) NOT NULL)");
+        $conn->exec("ALTER TABLE multipk ADD CONSTRAINT fk1 FOREIGN KEY (col1, col2) REFERENCES escaping (col1, col2)");
+
+        $result = $app->run();
+
+        $this->assertArrayHasKey('status', $result);
+        $this->assertArrayHasKey('tables', $result);
+        $this->assertEquals('success', $result['status']);
+        $this->assertCount(49, $result['tables']);
+
+        $table0 = array (
+            'name' => 'CL_SCHED',
+            'schema' => 'DB2INST1',
+            'type' => 'TABLE',
+            'columns' =>
+                array (
+                    0 =>
+                        array (
+                            'name' => 'CLASS_CODE',
+                            'type' => 'CHARACTER',
+                            'nullable' => true,
+                            'default' => NULL,
+                            'length' => '7',
+                            'ordinalPosition' => '0',
+                        ),
+                    1 =>
+                        array (
+                            'name' => 'DAY',
+                            'type' => 'SMALLINT',
+                            'nullable' => true,
+                            'default' => NULL,
+                            'length' => '2',
+                            'ordinalPosition' => '1',
+                        ),
+                    2 =>
+                        array (
+                            'name' => 'STARTING',
+                            'type' => 'TIME',
+                            'nullable' => true,
+                            'default' => NULL,
+                            'length' => '3',
+                            'ordinalPosition' => '2',
+                        ),
+                    3 =>
+                        array (
+                            'name' => 'ENDING',
+                            'type' => 'TIME',
+                            'nullable' => true,
+                            'default' => NULL,
+                            'length' => '3',
+                            'ordinalPosition' => '3',
+                        ),
+                ),
+        );
+        $this->assertEquals($table0, $result['tables'][0]);
+
+        $table1 = array (
+            'name' => 'DEPARTMENT',
+            'schema' => 'DB2INST1',
+            'type' => 'TABLE',
+            'columns' =>
+                array (
+                    0 =>
+                        array (
+                            'name' => 'DEPTNO',
+                            'type' => 'CHARACTER',
+                            'nullable' => false,
+                            'default' => NULL,
+                            'length' => '3',
+                            'ordinalPosition' => '0',
+                            'indexed' => true,
+                            'primaryKey' => true,
+                            'uniqueKey' => false,
+                        ),
+                    1 =>
+                        array (
+                            'name' => 'DEPTNAME',
+                            'type' => 'VARCHAR',
+                            'nullable' => false,
+                            'default' => NULL,
+                            'length' => '36',
+                            'ordinalPosition' => '1',
+                        ),
+                    2 =>
+                        array (
+                            'name' => 'MGRNO',
+                            'type' => 'CHARACTER',
+                            'nullable' => true,
+                            'default' => NULL,
+                            'length' => '6',
+                            'ordinalPosition' => '2',
+                            'indexed' => true,
+                            'primaryKey' => false,
+                            'uniqueKey' => false,
+                            'foreignKeyRefTable' => 'EMPLOYEE',
+                            'foreignKeyRef' => 'PK_EMPLOYEE',
+                        ),
+                    3 =>
+                        array (
+                            'name' => 'ADMRDEPT',
+                            'type' => 'CHARACTER',
+                            'nullable' => false,
+                            'default' => NULL,
+                            'length' => '3',
+                            'ordinalPosition' => '3',
+                            'indexed' => true,
+                            'primaryKey' => false,
+                            'uniqueKey' => false,
+                            'foreignKeyRefTable' => 'DEPARTMENT',
+                            'foreignKeyRef' => 'PK_DEPARTMENT',
+                        ),
+                    4 =>
+                        array (
+                            'name' => 'LOCATION',
+                            'type' => 'CHARACTER',
+                            'nullable' => true,
+                            'default' => NULL,
+                            'length' => '16',
+                            'ordinalPosition' => '4',
+                        ),
+                ),
+        );
+
+        $this->assertEquals($table1, $result['tables'][1]);
+    }
+
+    public function testManifestMetadata()
+    {
+        $config = $this->getConfig();
+
+        $config['parameters']['tables'][0]['columns'] = ["DEPTNO", "DEPTNAME", "MGRNO", "ADMRDEPT", "LOCATION"];
+        $config['parameters']['tables'][0]['table'] = 'DEPARTMENT';
+        $config['parameters']['tables'][0]['query'] = "SELECT \"DEPTNO\", \"DEPTNAME\", \"MGRNO\", \"ADMRDEPT\", \"LOCATION\" FROM DB2INST1.DEPARTMENT";
+        // use just 1 table
+        unset($config['parameters']['tables'][1]);
+
+        $app = new Application($config);
+
+        $result = $app->run();
+
+        $outputManifest = Yaml::parse(
+            file_get_contents($this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest')
+        );
+
+        $this->assertArrayHasKey('destination', $outputManifest);
+        $this->assertArrayHasKey('incremental', $outputManifest);
+        $this->assertArrayHasKey('metadata', $outputManifest);
+
+        $expectedTableMetadata = array (
+            0 =>
+                array (
+                    'key' => 'KBC.name',
+                    'value' => 'DEPARTMENT',
+                ),
+            1 =>
+                array (
+                    'key' => 'KBC.schema',
+                    'value' => 'DB2INST1',
+                ),
+            2 =>
+                array (
+                    'key' => 'KBC.type',
+                    'value' => 'TABLE',
+                ),
+        );
+        $this->assertEquals($expectedTableMetadata, $outputManifest['metadata']);
+
+        $this->assertArrayHasKey('column_metadata', $outputManifest);
+        $this->assertCount(5, $outputManifest['column_metadata']);
+
+        $expectedColumnMetadata = array (
+            'DEPTNO' =>
+                array (
+                    0 =>
+                        array (
+                            'key' => 'KBC.datatype.type',
+                            'value' => 'CHARACTER',
+                        ),
+                    1 =>
+                        array (
+                            'key' => 'KBC.datatype.nullable',
+                            'value' => false,
+                        ),
+                    2 =>
+                        array (
+                            'key' => 'KBC.datatype.basetype',
+                            'value' => 'STRING',
+                        ),
+                    3 =>
+                        array (
+                            'key' => 'KBC.datatype.length',
+                            'value' => '3',
+                        ),
+                    4 =>
+                        array (
+                            'key' => 'KBC.ordinalPosition',
+                            'value' => '0',
+                        ),
+                    5 =>
+                        array (
+                            'key' => 'KBC.indexed',
+                            'value' => true,
+                        ),
+                    6 =>
+                        array (
+                            'key' => 'KBC.primaryKey',
+                            'value' => true,
+                        ),
+                    7 =>
+                        array (
+                            'key' => 'KBC.uniqueKey',
+                            'value' => false,
+                        ),
+                ),
+            'DEPTNAME' =>
+                array (
+                    0 =>
+                        array (
+                            'key' => 'KBC.datatype.type',
+                            'value' => 'VARCHAR',
+                        ),
+                    1 =>
+                        array (
+                            'key' => 'KBC.datatype.nullable',
+                            'value' => false,
+                        ),
+                    2 =>
+                        array (
+                            'key' => 'KBC.datatype.basetype',
+                            'value' => 'STRING',
+                        ),
+                    3 =>
+                        array (
+                            'key' => 'KBC.datatype.length',
+                            'value' => '36',
+                        ),
+                    4 =>
+                        array (
+                            'key' => 'KBC.ordinalPosition',
+                            'value' => '1',
+                        ),
+                ),
+            'MGRNO' =>
+                array (
+                    0 =>
+                        array (
+                            'key' => 'KBC.datatype.type',
+                            'value' => 'CHARACTER',
+                        ),
+                    1 =>
+                        array (
+                            'key' => 'KBC.datatype.nullable',
+                            'value' => true,
+                        ),
+                    2 =>
+                        array (
+                            'key' => 'KBC.datatype.basetype',
+                            'value' => 'STRING',
+                        ),
+                    3 =>
+                        array (
+                            'key' => 'KBC.datatype.length',
+                            'value' => '6',
+                        ),
+                    4 =>
+                        array (
+                            'key' => 'KBC.ordinalPosition',
+                            'value' => '2',
+                        ),
+                    5 =>
+                        array (
+                            'key' => 'KBC.indexed',
+                            'value' => true,
+                        ),
+                    6 =>
+                        array (
+                            'key' => 'KBC.primaryKey',
+                            'value' => false,
+                        ),
+                    7 =>
+                        array (
+                            'key' => 'KBC.uniqueKey',
+                            'value' => false,
+                        ),
+                    8 =>
+                        array (
+                            'key' => 'KBC.foreignKeyRefTable',
+                            'value' => 'EMPLOYEE',
+                        ),
+                    9 =>
+                        array (
+                            'key' => 'KBC.foreignKeyRef',
+                            'value' => 'PK_EMPLOYEE',
+                        ),
+                ),
+            'ADMRDEPT' =>
+                array (
+                    0 =>
+                        array (
+                            'key' => 'KBC.datatype.type',
+                            'value' => 'CHARACTER',
+                        ),
+                    1 =>
+                        array (
+                            'key' => 'KBC.datatype.nullable',
+                            'value' => false,
+                        ),
+                    2 =>
+                        array (
+                            'key' => 'KBC.datatype.basetype',
+                            'value' => 'STRING',
+                        ),
+                    3 =>
+                        array (
+                            'key' => 'KBC.datatype.length',
+                            'value' => '3',
+                        ),
+                    4 =>
+                        array (
+                            'key' => 'KBC.ordinalPosition',
+                            'value' => '3',
+                        ),
+                    5 =>
+                        array (
+                            'key' => 'KBC.indexed',
+                            'value' => true,
+                        ),
+                    6 =>
+                        array (
+                            'key' => 'KBC.primaryKey',
+                            'value' => false,
+                        ),
+                    7 =>
+                        array (
+                            'key' => 'KBC.uniqueKey',
+                            'value' => false,
+                        ),
+                    8 =>
+                        array (
+                            'key' => 'KBC.foreignKeyRefTable',
+                            'value' => 'DEPARTMENT',
+                        ),
+                    9 =>
+                        array (
+                            'key' => 'KBC.foreignKeyRef',
+                            'value' => 'PK_DEPARTMENT',
+                        ),
+                ),
+            'LOCATION' =>
+                array (
+                    0 =>
+                        array (
+                            'key' => 'KBC.datatype.type',
+                            'value' => 'CHARACTER',
+                        ),
+                    1 =>
+                        array (
+                            'key' => 'KBC.datatype.nullable',
+                            'value' => true,
+                        ),
+                    2 =>
+                        array (
+                            'key' => 'KBC.datatype.basetype',
+                            'value' => 'STRING',
+                        ),
+                    3 =>
+                        array (
+                            'key' => 'KBC.datatype.length',
+                            'value' => '16',
+                        ),
+                    4 =>
+                        array (
+                            'key' => 'KBC.ordinalPosition',
+                            'value' => '4',
+                        ),
+                ),
+        );
+        $this->assertEquals($expectedColumnMetadata, $outputManifest['column_metadata']);
     }
 }
