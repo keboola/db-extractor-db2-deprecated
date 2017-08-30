@@ -209,4 +209,22 @@ class DB2 extends Extractor
 
         return $tabledef;
     }
+
+    public function simpleQuery($table, $columns = array())
+    {
+        if (count($columns) > 0) {
+            return sprintf("SELECT %s FROM %s",
+                implode(', ', array_map(function ($column) {
+                    return $this->quote($column);
+                }, $columns)),
+                $this->quote($table)
+            );
+        } else {
+            return sprintf("SELECT * FROM %s", $this->quote($table));
+        }
+    }
+
+    private function quote($obj) {
+        return "\"{$obj}\"";
+    }
 }
