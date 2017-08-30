@@ -15,3 +15,22 @@ parameters:
             incremental: false
             primaryKey: ~
             enabled: true
+        -
+            id: 1
+            name: department
+            outputTable: in.c-main.db2Department
+            table: DEPARTMENT
+            columns:
+              -
+                DEPTNO
+              -
+                DEPTNAME
+              -
+                MGRNO
+              -
+                ADMRDEPT
+              -
+                LOCATION
+            incremental: false
+            primaryKey: ~
+            enabled: true
