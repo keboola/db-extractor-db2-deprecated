@@ -58,10 +58,12 @@ class DB2 extends Extractor
             throw new UserException("Missing attribute 'outputTable'");
         }
         $outputTable = $table['outputTable'];
+
         if (empty($table['query'])) {
-            throw new UserException("Missing attribute 'query'");
+            $query = $this->simpleQuery($table['table'], $table['columns']);
+        } else {
+            $query = $table['query'];
         }
-        $query = $table['query'];
 
         $this->logger->info("Exporting to " . $outputTable);
         $csv = $this->createOutputCsv($outputTable);
@@ -126,6 +128,7 @@ class DB2 extends Extractor
                 }, $tables))
             );
         }
+        $sql .= " ORDER BY TABNAME";
 
         $res = $this->db->query($sql);
         $arr = $res->fetchAll(\PDO::FETCH_ASSOC);
@@ -208,5 +211,23 @@ class DB2 extends Extractor
         $tabledef['columns'] = $columns;
 
         return $tabledef;
+    }
+
+    public function simpleQuery($table, $columns = array())
+    {
+        if (count($columns) > 0) {
+            return sprintf("SELECT %s FROM %s",
+                implode(', ', array_map(function ($column) {
+                    return $this->quote($column);
+                }, $columns)),
+                $this->quote($table)
+            );
+        } else {
+            return sprintf("SELECT * FROM %s", $this->quote($table));
+        }
+    }
+
+    private function quote($obj) {
+        return "\"{$obj}\"";
     }
 }

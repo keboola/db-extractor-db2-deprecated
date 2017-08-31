@@ -211,114 +211,88 @@ class DB2Test extends ExtractorTest
         $this->assertCount(49, $result['tables']);
 
         $table0 = array (
-            'name' => 'CL_SCHED',
+            'name' => 'ACT',
             'schema' => 'DB2INST1',
             'type' => 'TABLE',
             'columns' =>
                 array (
                     0 =>
                         array (
-                            'name' => 'CLASS_CODE',
-                            'type' => 'CHARACTER',
-                            'nullable' => true,
-                            'default' => NULL,
-                            'length' => '7',
-                            'ordinalPosition' => '0',
-                        ),
-                    1 =>
-                        array (
-                            'name' => 'DAY',
+                            'name' => 'ACTNO',
                             'type' => 'SMALLINT',
-                            'nullable' => true,
-                            'default' => NULL,
-                            'length' => '2',
-                            'ordinalPosition' => '1',
-                        ),
-                    2 =>
-                        array (
-                            'name' => 'STARTING',
-                            'type' => 'TIME',
-                            'nullable' => true,
-                            'default' => NULL,
-                            'length' => '3',
-                            'ordinalPosition' => '2',
-                        ),
-                    3 =>
-                        array (
-                            'name' => 'ENDING',
-                            'type' => 'TIME',
-                            'nullable' => true,
-                            'default' => NULL,
-                            'length' => '3',
-                            'ordinalPosition' => '3',
-                        ),
-                ),
-        );
-        $this->assertEquals($table0, $result['tables'][0]);
-
-        $table1 = array (
-            'name' => 'DEPARTMENT',
-            'schema' => 'DB2INST1',
-            'type' => 'TABLE',
-            'columns' =>
-                array (
-                    0 =>
-                        array (
-                            'name' => 'DEPTNO',
-                            'type' => 'CHARACTER',
                             'nullable' => false,
                             'default' => NULL,
-                            'length' => '3',
+                            'length' => '2',
                             'ordinalPosition' => '0',
                             'indexed' => true,
                             'primaryKey' => true,
                             'uniqueKey' => false,
+                            'foreignKeyRefTable' => 'ACT',
+                            'foreignKeyRef' => 'PK_ACT',
                         ),
                     1 =>
                         array (
-                            'name' => 'DEPTNAME',
-                            'type' => 'VARCHAR',
+                            'name' => 'ACTNO',
+                            'type' => 'SMALLINT',
                             'nullable' => false,
                             'default' => NULL,
-                            'length' => '36',
-                            'ordinalPosition' => '1',
+                            'length' => '2',
+                            'ordinalPosition' => '0',
+                            'indexed' => true,
+                            'primaryKey' => false,
+                            'uniqueKey' => true,
+                            'foreignKeyRefTable' => 'ACT',
+                            'foreignKeyRef' => 'PK_ACT',
                         ),
                     2 =>
                         array (
-                            'name' => 'MGRNO',
-                            'type' => 'CHARACTER',
-                            'nullable' => true,
-                            'default' => NULL,
-                            'length' => '6',
-                            'ordinalPosition' => '2',
-                            'indexed' => true,
-                            'primaryKey' => false,
-                            'uniqueKey' => false,
-                            'foreignKeyRefTable' => 'EMPLOYEE',
-                            'foreignKeyRef' => 'PK_EMPLOYEE',
-                        ),
-                    3 =>
-                        array (
-                            'name' => 'ADMRDEPT',
+                            'name' => 'ACTKWD',
                             'type' => 'CHARACTER',
                             'nullable' => false,
                             'default' => NULL,
-                            'length' => '3',
-                            'ordinalPosition' => '3',
+                            'length' => '6',
+                            'ordinalPosition' => '1',
                             'indexed' => true,
                             'primaryKey' => false,
-                            'uniqueKey' => false,
-                            'foreignKeyRefTable' => 'DEPARTMENT',
-                            'foreignKeyRef' => 'PK_DEPARTMENT',
+                            'uniqueKey' => true,
                         ),
-                    4 =>
+                    3 =>
                         array (
-                            'name' => 'LOCATION',
+                            'name' => 'ACTDESC',
+                            'type' => 'VARCHAR',
+                            'nullable' => false,
+                            'default' => NULL,
+                            'length' => '20',
+                            'ordinalPosition' => '2',
+                        ),
+                ),
+
+        );
+        $this->assertEquals($table0, $result['tables'][0]);
+
+        $table1 = array (
+            'name' => 'ADEFUSR',
+            'schema' => 'DB2INST1',
+            'type' => 'S',
+            'columns' =>
+                array (
+                    0 =>
+                        array (
+                            'name' => 'WORKDEPT',
                             'type' => 'CHARACTER',
                             'nullable' => true,
                             'default' => NULL,
-                            'length' => '16',
-                            'ordinalPosition' => '4',
+                            'length' => '3',
+                            'ordinalPosition' => '0',
+                        ),
+                    1 =>
+                        array (
+                            'name' => 'NO_OF_EMPLOYEES',
+                            'type' => 'INTEGER',
+                            'nullable' => false,
+                            'default' => NULL,
+                            'length' => '4',
+                            'ordinalPosition' => '1',
                         ),
                 ),
         );
@@ -326,15 +300,32 @@ class DB2Test extends ExtractorTest
         $this->assertEquals($table1, $result['tables'][1]);
     }
 
+    public function testSimpleQueryRun()
+    {
+        $config = $this->getConfig();
+
+        unset($config['parameters']['tables'][0]);
+
+        $app = new Application($config);
+
+        $result = $app->run();
+
+        $expectedCsvFile = ROOT_PATH . '/tests/data/department.csv';
+        $outputCsvFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv';
+        $outputManifestFile = $this->dataDir . '/out/tables/' . $result['imported'][0] . '.csv.manifest';
+
+        $this->assertEquals('success', $result['status']);
+        $this->assertFileExists($outputCsvFile);
+        $this->assertFileExists($outputManifestFile);
+        $this->assertEquals(file_get_contents($expectedCsvFile), file_get_contents($outputCsvFile));
+    }
+
     public function testManifestMetadata()
     {
         $config = $this->getConfig();
 
-        $config['parameters']['tables'][0]['columns'] = ["DEPTNO", "DEPTNAME", "MGRNO", "ADMRDEPT", "LOCATION"];
-        $config['parameters']['tables'][0]['table'] = 'DEPARTMENT';
-        $config['parameters']['tables'][0]['query'] = "SELECT \"DEPTNO\", \"DEPTNAME\", \"MGRNO\", \"ADMRDEPT\", \"LOCATION\" FROM DB2INST1.DEPARTMENT";
-        // use just 1 table
-        unset($config['parameters']['tables'][1]);
+        // use just the 1 table with table/columns
+        unset($config['parameters']['tables'][0]);
 
         $app = new Application($config);
 
