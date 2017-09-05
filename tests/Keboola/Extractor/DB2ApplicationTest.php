@@ -20,6 +20,9 @@ class DB2ApplicationTest extends ExtractorTest
         $process->setTimeout(300);
         $process->run();
 
+        var_dump($process->getOutput());
+        var_dump($process->getErrorOutput());
+
         $this->assertEquals(0, $process->getExitCode());
         $this->assertJson($process->getOutput());
         $this->assertEquals("", $process->getErrorOutput());
