@@ -19,7 +19,9 @@ parameters:
             id: 1
             name: department
             outputTable: in.c-main.db2Department
-            table: DEPARTMENT
+            table:
+              schema: DB2INST1
+              tableName: DEPARTMENT
             columns:
               -
                 DEPTNO

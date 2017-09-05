@@ -264,6 +264,7 @@ class DB2Test extends ExtractorTest
                             'default' => NULL,
                             'length' => '20',
                             'ordinalPosition' => '2',
+                            'primaryKey' => false
                         ),
                 ),
 
@@ -284,6 +285,7 @@ class DB2Test extends ExtractorTest
                             'default' => NULL,
                             'length' => '3',
                             'ordinalPosition' => '0',
+                            'primaryKey' => false
                         ),
                     1 =>
                         array (
@@ -293,6 +295,7 @@ class DB2Test extends ExtractorTest
                             'default' => NULL,
                             'length' => '4',
                             'ordinalPosition' => '1',
+                            'primaryKey' => false
                         ),
                 ),
         );
@@ -386,17 +389,17 @@ class DB2Test extends ExtractorTest
                         ),
                     4 =>
                         array (
-                            'key' => 'KBC.ordinalPosition',
-                            'value' => '0',
+                            'key' => 'KBC.primaryKey',
+                            'value' => true,
                         ),
                     5 =>
                         array (
-                            'key' => 'KBC.indexed',
-                            'value' => true,
+                            'key' => 'KBC.ordinalPosition',
+                            'value' => '0',
                         ),
                     6 =>
                         array (
-                            'key' => 'KBC.primaryKey',
+                            'key' => 'KBC.indexed',
                             'value' => true,
                         ),
                     7 =>
@@ -429,6 +432,11 @@ class DB2Test extends ExtractorTest
                         ),
                     4 =>
                         array (
+                            'key' => 'KBC.primaryKey',
+                            'value' => false,
+                        ),
+                    5 =>
+                        array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => '1',
                         ),
@@ -457,18 +465,18 @@ class DB2Test extends ExtractorTest
                         ),
                     4 =>
                         array (
-                            'key' => 'KBC.ordinalPosition',
-                            'value' => '2',
+                            'key' => 'KBC.primaryKey',
+                            'value' => false,
                         ),
                     5 =>
                         array (
-                            'key' => 'KBC.indexed',
-                            'value' => true,
+                            'key' => 'KBC.ordinalPosition',
+                            'value' => '2',
                         ),
                     6 =>
                         array (
-                            'key' => 'KBC.primaryKey',
-                            'value' => false,
+                            'key' => 'KBC.indexed',
+                            'value' => true,
                         ),
                     7 =>
                         array (
@@ -510,18 +518,18 @@ class DB2Test extends ExtractorTest
                         ),
                     4 =>
                         array (
-                            'key' => 'KBC.ordinalPosition',
-                            'value' => '3',
+                            'key' => 'KBC.primaryKey',
+                            'value' => false,
                         ),
                     5 =>
                         array (
-                            'key' => 'KBC.indexed',
-                            'value' => true,
+                            'key' => 'KBC.ordinalPosition',
+                            'value' => '3',
                         ),
                     6 =>
                         array (
-                            'key' => 'KBC.primaryKey',
-                            'value' => false,
+                            'key' => 'KBC.indexed',
+                            'value' => true,
                         ),
                     7 =>
                         array (
@@ -562,6 +570,11 @@ class DB2Test extends ExtractorTest
                             'value' => '16',
                         ),
                     4 =>
+                        array (
+                            'key' => 'KBC.primaryKey',
+                            'value' => false,
+                        ),
+                    5 =>
                         array (
                             'key' => 'KBC.ordinalPosition',
                             'value' => '4',

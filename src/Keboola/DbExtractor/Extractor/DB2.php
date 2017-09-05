@@ -100,17 +100,6 @@ class DB2 extends Extractor
         return $outputTable;
     }
 
-    private function replaceNull($row, $value)
-    {
-        foreach ($row as $k => $v) {
-            if ($v === null) {
-                $row[$k] = $value;
-            }
-        }
-
-        return $row;
-    }
-
     public function testConnection()
     {
         $this->db->query('SELECT 1 FROM sysibm.sysdummy1');
@@ -122,9 +111,12 @@ class DB2 extends Extractor
         
         if (!is_null($tables) && count($tables) > 0) {
             $sql .= sprintf(
-                " AND TABNAME IN ('%s')",
+                " AND TABNAME IN ('%s') AND TABSCHEMA IN ('%s')",
                 implode("','", array_map(function ($table) {
-                    return $table;
+                    return $table['tableName'];
+                }, $tables)),
+                implode("','", array_map(function ($table) {
+                    return $table['schema'];
                 }, $tables))
             );
         }
@@ -213,17 +205,22 @@ class DB2 extends Extractor
         return $tabledef;
     }
 
-    public function simpleQuery($table, $columns = array())
+    public function simpleQuery(array $table, array $columns = array())
     {
         if (count($columns) > 0) {
-            return sprintf("SELECT %s FROM %s",
+            return sprintf("SELECT %s FROM %s.%s",
                 implode(', ', array_map(function ($column) {
                     return $this->quote($column);
                 }, $columns)),
-                $this->quote($table)
+                $this->quote($table['schema']),
+                $this->quote($table['tableName'])
             );
         } else {
-            return sprintf("SELECT * FROM %s", $this->quote($table));
+            return sprintf(
+                "SELECT * FROM %s.%s",
+                $this->quote($table['schema']),
+                $this->quote($table['tableName'])
+            );
         }
     }
 
