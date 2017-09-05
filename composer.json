@@ -1,7 +1,7 @@
 {
     "name": "keboola/db-extractor-db2",
     "require": {
-        "keboola/db-extractor-common": "~5.1.0"
+        "keboola/db-extractor-common": "~5.2"
     },
     "require-dev": {
         "phpunit/phpunit": "4.6.*"

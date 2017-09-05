@@ -196,11 +196,11 @@ class DB2 extends Extractor
                 "nullable" => ($column['NULLS'] === 'N') ? false : true,
                 "default" => $column['DEFAULT'],
                 "length" => $length,
+                "primaryKey" => ($column['UNIQUERULE'] === 'P') ? true : false,
                 "ordinalPosition" => $column['COLNO'],
             ];
             if (!is_null($column['INDEXTYPE'])) {
                 $columns[$i]['indexed'] = true;
-                $columns[$i]['primaryKey'] = ($column['UNIQUERULE'] === 'P') ? true : false;
                 $columns[$i]['uniqueKey'] = ($column['UNIQUERULE'] === 'U') ? true : false;
             }
             if (!is_null($column['REFKEYNAME'])) {
