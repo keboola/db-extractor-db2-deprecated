@@ -223,52 +223,39 @@ class DB2Test extends ExtractorTest
                             'nullable' => false,
                             'default' => NULL,
                             'length' => '2',
-                            'ordinalPosition' => '0',
-                            'indexed' => true,
-                            'primaryKey' => true,
-                            'uniqueKey' => false,
-                            'foreignKeyRefTable' => 'ACT',
-                            'foreignKeyRef' => 'PK_ACT',
-                        ),
-                    1 =>
-                        array (
-                            'name' => 'ACTNO',
-                            'type' => 'SMALLINT',
-                            'nullable' => false,
-                            'default' => NULL,
-                            'length' => '2',
-                            'ordinalPosition' => '0',
-                            'indexed' => true,
                             'primaryKey' => false,
+                            'ordinalPosition' => '0',
+                            'indexed' => true,
                             'uniqueKey' => true,
                             'foreignKeyRefTable' => 'ACT',
                             'foreignKeyRef' => 'PK_ACT',
                         ),
-                    2 =>
+                    1 =>
                         array (
                             'name' => 'ACTKWD',
                             'type' => 'CHARACTER',
                             'nullable' => false,
                             'default' => NULL,
                             'length' => '6',
+                            'primaryKey' => false,
                             'ordinalPosition' => '1',
                             'indexed' => true,
-                            'primaryKey' => false,
                             'uniqueKey' => true,
                         ),
-                    3 =>
+                    2 =>
                         array (
                             'name' => 'ACTDESC',
                             'type' => 'VARCHAR',
                             'nullable' => false,
                             'default' => NULL,
                             'length' => '20',
+                            'primaryKey' => false,
                             'ordinalPosition' => '2',
-                            'primaryKey' => false
                         ),
                 ),
-
         );
+        var_export($result['tables'][0]);
+        var_export($result['tables'][1]);
         $this->assertEquals($table0, $result['tables'][0]);
 
         $table1 = array (
@@ -284,8 +271,8 @@ class DB2Test extends ExtractorTest
                             'nullable' => true,
                             'default' => NULL,
                             'length' => '3',
+                            'primaryKey' => false,
                             'ordinalPosition' => '0',
-                            'primaryKey' => false
                         ),
                     1 =>
                         array (
@@ -294,8 +281,8 @@ class DB2Test extends ExtractorTest
                             'nullable' => false,
                             'default' => NULL,
                             'length' => '4',
+                            'primaryKey' => false,
                             'ordinalPosition' => '1',
-                            'primaryKey' => false
                         ),
                 ),
         );
