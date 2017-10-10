@@ -126,33 +126,25 @@ class DB2 extends Extractor
         $arr = $res->fetchAll(\PDO::FETCH_ASSOC);
 
         $output = [];
+        $tableNameArray = [];
         foreach ($arr as $table) {
-            $output[] = $this->describeTable($table);
-        }
-        return $output;
-    }
-
-    protected function describeTable(array $table)
-    {
-        $tabledef = [
-            'name' => $table['TABNAME'],
-            'schema' => (isset($table['TABSCHEMA'])) ? $table['TABSCHEMA'] : null
-        ];
-        if (isset($table['TYPE'])) {
+            $tableNameArray[] = $table['TABNAME'];
+            $tableDefs[$table['TABNAME']] = [
+                'name' => $table['TABNAME'],
+                'schema' => (isset($table['TABSCHEMA'])) ? $table['TABSCHEMA'] : null
+            ];
             switch ($table['TYPE']) {
                 case 'T':
                 case 'U':
-                    $tabledef['type'] = 'TABLE';
+                    $tableDefs[$table['TABNAME']]['type'] = 'TABLE';
                     break;
                 case 'V':
                 case 'W':
-                    $tabledef['type'] = 'VIEW';
+                    $tableDefs[$table['TABNAME']]['type'] = 'VIEW';
                     break;
                 default:
-                    $tabledef['type'] = $table['TYPE'];
+                    $tableDefs[$table['TABNAME']]['type'] = $table['TYPE'];
             }
-        } else {
-            $tabledef['type'] = null;
         }
 
         $sql = sprintf(
@@ -167,22 +159,26 @@ class DB2 extends Extractor
                 JOIN SYSCAT.REFERENCES AS REF 
                 ON KCU.CONSTNAME = REF.CONSTNAME
             ) AS REFCOLS ON COLS.TABNAME = REFCOLS.TABNAME AND COLS.COLNAME = REFCOLS.COLNAME 
-            WHERE COLS.TABNAME = '%s' ORDER BY COLS.COLNO",
-            $table['TABNAME']
+            WHERE COLS.TABNAME IN (%s) ORDER BY COLS.TABSCHEMA, COLS.TABNAME, COLS.COLNO",
+            implode(', ', array_map(function ($tableName) {
+                return "'" . $tableName . "'";
+            }, $tableNameArray))
         );
 
         $res = $this->db->query($sql);
 
         $arr = $res->fetchAll();
-        $columns = [];
+
         foreach ($arr as $i => $column) {
 
             $length = $column['LENGTH'];
             if ($column['SCALE'] != 0 && $column['TYPENAME'] === 'DECIMAL') {
                 $length .= "," . $column['SCALE'];
             }
-
-            $columns[$i] = [
+            if (!array_key_exists('columns', $tableDefs[$column['TABNAME']])) {
+                $tableDefs[$column['TABNAME']]['columns'] = [];
+            }
+            $tableDefs[$column['TABNAME']]['columns'][$column['COLNO']] = [
                 "name" => $column['COLNAME'],
                 "type" => $column['TYPENAME'],
                 "nullable" => ($column['NULLS'] === 'N') ? false : true,
@@ -192,17 +188,21 @@ class DB2 extends Extractor
                 "ordinalPosition" => $column['COLNO'],
             ];
             if (!is_null($column['INDEXTYPE'])) {
-                $columns[$i]['indexed'] = true;
-                $columns[$i]['uniqueKey'] = ($column['UNIQUERULE'] === 'U') ? true : false;
+                $tableDefs[$column['TABNAME']]['columns'][$column['COLNO']]['indexed'] = true;
+                $tableDefs[$column['TABNAME']]['columns'][$column['COLNO']]['uniqueKey'] = ($column['UNIQUERULE'] === 'U') ? true : false;
             }
             if (!is_null($column['REFKEYNAME'])) {
-                $columns[$i]['foreignKeyRefTable'] = $column['REFTABNAME'];
-                $columns[$i]['foreignKeyRef'] = $column['REFKEYNAME'];
+                $tableDefs[$column['TABNAME']]['columns'][$column['COLNO']]['foreignKeyRefTable'] = $column['REFTABNAME'];
+                $tableDefs[$column['TABNAME']]['columns'][$column['COLNO']]['foreignKeyRef'] = $column['REFKEYNAME'];
             }
         }
-        $tabledef['columns'] = $columns;
+        return array_values($tableDefs);
+    }
 
-        return $tabledef;
+    protected function describeTable(array $table)
+    {
+        // Deprecated
+        return null;
     }
 
     public function simpleQuery(array $table, array $columns = array())
