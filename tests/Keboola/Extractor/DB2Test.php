@@ -254,8 +254,6 @@ class DB2Test extends ExtractorTest
                         ),
                 ),
         );
-        var_export($result['tables'][0]);
-        var_export($result['tables'][1]);
         $this->assertEquals($table0, $result['tables'][0]);
 
         $table1 = array (
