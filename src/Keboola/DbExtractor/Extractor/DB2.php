@@ -125,7 +125,10 @@ class DB2 extends Extractor
         $res = $this->db->query($sql);
         $arr = $res->fetchAll(\PDO::FETCH_ASSOC);
 
-        $output = [];
+        if (count($arr) === 0) {
+            return [];
+        }
+        
         $tableNameArray = [];
         foreach ($arr as $table) {
             $tableNameArray[] = $table['TABNAME'];
