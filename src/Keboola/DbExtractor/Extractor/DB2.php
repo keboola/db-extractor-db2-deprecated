@@ -88,7 +88,7 @@ class DB2 extends Extractor
                 $this->logger->warning("Query returned empty result. Nothing was imported.");
             }
         } catch (\PDOException $e) {
-            throw new UserException("DB query failed: " . $e->getMessage(), 0, $e);
+            throw new UserException("DB query [{$table['name']}] failed: " . $e->getMessage(), 0, $e);
         }
 
         if ($this->createManifest($table) === false) {

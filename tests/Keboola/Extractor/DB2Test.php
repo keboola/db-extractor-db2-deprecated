@@ -86,6 +86,25 @@ class DB2Test extends ExtractorTest
         $this->assertEquals(file_get_contents($expectedCsvFile), file_get_contents($outputCsvFile));
     }
 
+    public function testRunFailure()
+    {
+        $config = $this->getConfig();
+        $config['parameters']['tables'][] = [
+            'id' => 10,
+            'name' => 'bad',
+            'query' => 'SELECT something FROM non_existing_table;',
+            'outputTable' => 'dummy'
+        ];
+        try {
+            $this->app = new Application($config);
+            $result = $this->app->run();
+            $this->fail("Failing query must raise exception.");
+        } catch (\Keboola\DbExtractor\Exception\UserException $e) {
+            // test that the error message contains the query name
+            $this->assertContains('[bad]', $e->getMessage());
+        }
+    }
+
     private function getConnection()
     {
         $config = $this->getConfig()['parameters']['db'];
