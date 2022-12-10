@@ -22,7 +22,7 @@ try {
         throw new UserException('Data folder not set.');
     }
 
-    $config = Yaml::parse(file_get_contents($arguments["data"] . "/config.yml"));
+    $config = json_decode(file_get_contents($arguments["data"] . "/config.json"));
     $config['parameters']['data_dir'] = $arguments['data'];
     $config['parameters']['extractor_class'] = 'DB2';
 

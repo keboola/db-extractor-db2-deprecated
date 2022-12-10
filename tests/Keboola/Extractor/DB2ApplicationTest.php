@@ -13,8 +13,8 @@ class DB2ApplicationTest extends ExtractorTest
     {
         $config = $this->getConfig('db2');
         $config['action'] = 'testConnection';
-        @unlink($this->dataDir . '/config.yml');
-        file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
+        @unlink($this->dataDir . '/config.json');
+        file_put_contents($this->dataDir . '/config.json', Yaml::dump($config));
 
         $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
@@ -46,8 +46,8 @@ class DB2ApplicationTest extends ExtractorTest
             'localPort' => '15213',
         ];
 
-        @unlink($this->dataDir . '/config.yml');
-        file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
+        @unlink($this->dataDir . '/config.json');
+        file_put_contents($this->dataDir . '/config.json', Yaml::dump($config));
 
         $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
@@ -63,8 +63,8 @@ class DB2ApplicationTest extends ExtractorTest
         @unlink($outputCsvFile);
 
         $config = $this->getConfig('db2');
-        @unlink($this->dataDir . '/config.yml');
-        file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
+        @unlink($this->dataDir . '/config.json');
+        file_put_contents($this->dataDir . '/config.json', Yaml::dump($config));
 
         $csv1 = new CsvFile($this->dataDir . '/projact.csv');
 
@@ -101,8 +101,8 @@ class DB2ApplicationTest extends ExtractorTest
             'remotePort' => $config['parameters']['db']['port'],
             'localPort' => '15214',
         ];
-        @unlink($this->dataDir . '/config.yml');
-        file_put_contents($this->dataDir . '/config.yml', Yaml::dump($config));
+        @unlink($this->dataDir . '/config.json');
+        file_put_contents($this->dataDir . '/config.json', Yaml::dump($config));
 
         $csv1 = new CsvFile($this->dataDir . '/projact.csv');
 
