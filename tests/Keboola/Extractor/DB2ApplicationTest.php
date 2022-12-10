@@ -13,7 +13,10 @@ class DB2ApplicationTest extends ExtractorTest
         $config = $this->getConfig('db2');
         $config['action'] = 'testConnection';
         @unlink($this->dataDir . '/config.json');
-        file_put_contents($this->dataDir . '/config.json', json_decode($config, true));
+        file_put_contents(
+            $this->dataDir . '/config.json',
+            json_encode($config)
+        );
 
         $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
@@ -46,7 +49,7 @@ class DB2ApplicationTest extends ExtractorTest
         ];
 
         @unlink($this->dataDir . '/config.json');
-        file_put_contents($this->dataDir . '/config.json', json_decode($config, true));
+        file_put_contents($this->dataDir . '/config.json', json_encode($config));
 
         $process = new Process('php ' . ROOT_PATH . '/run.php --data=' . $this->dataDir);
         $process->setTimeout(300);
@@ -63,7 +66,7 @@ class DB2ApplicationTest extends ExtractorTest
 
         $config = $this->getConfig('db2');
         @unlink($this->dataDir . '/config.json');
-        file_put_contents($this->dataDir . '/config.json', json_decode($config, true));
+        file_put_contents($this->dataDir . '/config.json', json_encode($config));
 
         $csv1 = new CsvFile($this->dataDir . '/projact.csv');
 
@@ -101,7 +104,7 @@ class DB2ApplicationTest extends ExtractorTest
             'localPort' => '15214',
         ];
         @unlink($this->dataDir . '/config.json');
-        file_put_contents($this->dataDir . '/config.json', json_decode($config, true));
+        file_put_contents($this->dataDir . '/config.json', json_encode($config));
 
         $csv1 = new CsvFile($this->dataDir . '/projact.csv');
 
@@ -118,5 +121,23 @@ class DB2ApplicationTest extends ExtractorTest
         $this->assertFileExists($outputCsvFile);
         $this->assertFileExists($this->dataDir . '/out/tables/in.c-main.db2projact.csv.manifest');
         $this->assertFileEquals((string) $csv1, $outputCsvFile);
+    }
+
+    protected function getConfig($driver)
+    {
+        $config = json_decode(
+            file_get_contents($this->dataDir . '/' .$driver . '/config.json'),
+            true
+        )
+        ;
+        $config['parameters']['data_dir'] = $this->dataDir;
+
+        $config['parameters']['db']['user'] = $this->getEnv($driver, 'DB_USER', true);
+        $config['parameters']['db']['#password'] = $this->getEnv($driver, 'DB_PASSWORD', true);
+        $config['parameters']['db']['host'] = $this->getEnv($driver, 'DB_HOST');
+        $config['parameters']['db']['port'] = $this->getEnv($driver, 'DB_PORT');
+        $config['parameters']['db']['database'] = $this->getEnv($driver, 'DB_DATABASE');
+
+        return $config;
     }
 }
