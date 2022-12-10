@@ -5,7 +5,6 @@ use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\UserException;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
-use Symfony\Component\Yaml\Yaml;
 
 define('APP_NAME', 'ex-db-db2');
 define('ROOT_PATH', __DIR__);
@@ -22,7 +21,7 @@ try {
         throw new UserException('Data folder not set.');
     }
 
-    $config = json_decode(file_get_contents($arguments["data"] . "/config.json"));
+    $config = json_decode(file_get_contents($arguments["data"] . "/config.json"), true);
     $config['parameters']['data_dir'] = $arguments['data'];
     $config['parameters']['extractor_class'] = 'DB2';
 
