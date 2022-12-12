@@ -1,5 +1,5 @@
 vendor/
-tests/data/config.yml
+tests/data/config.json
 tests/data/out/
 .idea/
 composer.phar
