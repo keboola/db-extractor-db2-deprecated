@@ -8,6 +8,7 @@
 
 namespace Keboola\DbExtractor\Extractor;
 
+use Keboola\Datatype\Definition\GenericStorage;
 use Keboola\DbExtractor\Exception\ApplicationException;
 use Keboola\DbExtractor\Exception\UserException;
 
@@ -229,5 +230,51 @@ class DB2 extends Extractor
 
     private function quote($obj) {
         return "\"{$obj}\"";
+    }protected function createManifest($table)
+{
+    $outFilename = $this->dataDir . '/out/tables/' . $table['outputTable'] . '.csv.manifest';
+
+    $manifestData = [
+        'destination' => $table['outputTable'],
+        'incremental' => $table['incremental']
+    ];
+
+    if (!empty($table['primaryKey'])) {
+        $manifestData['primary_key'] = $table['primaryKey'];
     }
+
+    if (isset($table['table']) && !is_null($table['table'])) {
+        $tableDetails = $this->getTables([$table['table']])[0];
+        $columnMetadata = [];
+        foreach ($tableDetails['columns'] as $column) {
+            if (count($table['columns']) > 0 && !in_array($column['name'], $table['columns'])) {
+                continue;
+            }
+            $datatypeKeys = ['type', 'length', 'nullable', 'default', 'format'];
+            $datatype = new GenericStorage(
+                $column['type'],
+                array_intersect_key($column, array_flip($datatypeKeys))
+            );
+            $columnMetadata[$column['name']] = $datatype->toMetadata();
+            $nonDatatypeKeys = array_diff_key($column, array_flip($datatypeKeys));
+            foreach ($nonDatatypeKeys as $key => $value) {
+                if ($key !== 'name') {
+                    $columnMetadata[$column['name']][] = [
+                        'key' => "KBC." . $key,
+                        'value'=> $value
+                    ];
+                }
+            }
+        }
+        unset($tableDetails['columns']);
+        foreach ($tableDetails as $key => $value) {
+            $manifestData['metadata'][] = [
+                "key" => "KBC." . $key,
+                "value" => $value
+            ];
+        }
+        $manifestData['column_metadata'] = $columnMetadata;
+    }
+    return file_put_contents($outFilename, json_encode($manifestData));
+}
 }
