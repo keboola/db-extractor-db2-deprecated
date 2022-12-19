@@ -121,6 +121,12 @@ class DB2ApplicationTest extends ExtractorTest
         $this->assertFileExists($outputCsvFile);
         $this->assertFileExists($this->dataDir . '/out/tables/in.c-main.db2projact.csv.manifest');
         $this->assertFileEquals((string) $csv1, $outputCsvFile);
+
+        $manifest = file_get_contents($this->dataDir . '/out/tables/in.c-main.db2projact.csv.manifest');
+        $manifest = json_decode($manifest, true);
+
+        $this->assertArrayHasKey('destination', $manifest);
+        $this->assertArrayHasKey('incremental', $manifest);
     }
 
     protected function getConfig($driver)
