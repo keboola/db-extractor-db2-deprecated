@@ -41,6 +41,8 @@ class DB2 extends Extractor
             $dbParams['database']
         );
 
+        $this->logger->info($dsn);
+
         $pdo = new \PDO($dsn, $dbParams['user'], $dbParams['password'], $options);
 
         return $pdo;
