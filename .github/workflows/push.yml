@@ -8,7 +8,7 @@ env:
   # Developer portal login
   KBC_DEVELOPERPORTAL_VENDOR: "keboola"
   KBC_DEVELOPERPORTAL_APP: "keboola.ex-db-db2"
-  KBC_DEVELOPERPORTAL_USERNAME: "keboola+ex_db_db2_gh_actions"
+  KBC_DEVELOPERPORTAL_USERNAME: "keboola+ex_db_db2_deprecated_github_actions"
   KBC_DEVELOPERPORTAL_PASSWORD: ${{ secrets.KBC_DEVELOPERPORTAL_PASSWORD }}
 
   # DockerHub login
